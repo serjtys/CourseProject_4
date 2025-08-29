@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{% if object %}Редактирование{% else %}Создание{% endif %} рассылки</h1>
+
+<form method="post">
+    {% csrf_token %}
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Дата и время начала:</label>
+                <input type="datetime-local" name="start_time" value="{{ form.start_time.value|date:'Y-m-d\TH:i' }}" class="form-control" required>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Дата и время окончания:</label>
+                <input type="datetime-local" name="end_time" value="{{ form.end_time.value|date:'Y-m-d\TH:i' }}" class="form-control" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Статус:</label>
+                {{ form.status }}
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <label class="form-label">Сообщение:</label>
+                {{ form.message }}
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Клиенты:</label>
+        {{ form.clients }}
+        <div class="form-text">Зажмите Ctrl для выбора нескольких клиентов</div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <a href="{% url 'mailing:mailing_list' %}" class="btn btn-secondary">Отмена</a>
+</form>
+{% endblock %}
