@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Моя статистика</h1>
+
+    <!-- Основные метрики -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="card text-white bg-primary mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Всего рассылок</h5>
+                    <p class="card-text display-4">{{ total_mailings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Активные</h5>
+                    <p class="card-text display-4">{{ active_mailings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-warning mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Созданы</h5>
+                    <p class="card-text display-4">{{ created_mailings }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-secondary mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Завершены</h5>
+                    <p class="card-text display-4">{{ completed_mailings }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика попыток и клиентов -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Попытки отправки</h5>
+                    <p class="text-success fs-3">{{ successful_attempts }}</p>
+                    <small>Успешных</small>
+                    <p class="text-danger fs-3">{{ failed_attempts }}</p>
+                    <small>Неудачных</small>
+                    <p class="fs-4">{{ total_attempts }}</p>
+                    <small>Всего попыток</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Эффективность</h5>
+                    <p class="display-4 text-{% if success_rate >= 80 %}success{% elif success_rate >= 50 %}warning{% else %}danger{% endif %}">
+                        {{ success_rate }}%
+                    </p>
+                    <small>Успешных отправок</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Клиенты</h5>
+                    <p class="display-4">{{ total_clients }}</p>
+                    <small>Всего клиентов</small>
+                    <p class="fs-3 text-info">{{ active_clients }}</p>
+                    <small>Активных клиентов</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Детальная статистика по рассылкам -->
+    {% if mailing_stats %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Детальная статистика по рассылкам</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Рассылка</th>
+                            <th>Статус</th>
+                            <th>Клиентов</th>
+                            <th>Попыток</th>
+                            <th>Успешно</th>
+                            <th>Неудачно</th>
+                            <th>Последняя попытка</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in mailing_stats %}
+                        <tr>
+                            <td>
+                                <strong>#{{ stat.mailing.id }}</strong><br>
+                                <small class="text-muted">{{ stat.mailing.message.subject|truncatewords:5 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if stat.mailing.status == 'started' %}success{% elif stat.mailing.status == 'created' %}warning{% else %}secondary{% endif %}">
+                                    {{ stat.mailing.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="text-center">{{ stat.clients_count }}</td>
+                            <td class="text-center">{{ stat.total_attempts }}</td>
+                            <td class="text-center text-success">{{ stat.successful_attempts }}</td>
+                            <td class="text-center text-danger">{{ stat.failed_attempts }}</td>
+                            <td>
+                                {% if stat.last_attempt %}
+                                    <small>{{ stat.last_attempt.attempt_time|date:"d.m.Y H:i" }}</small><br>
+                                    <span class="badge bg-{% if stat.last_attempt.status == 'success' %}success{% else %}danger{% endif %}">
+                                        {{ stat.last_attempt.get_status_display }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Нет данных</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Топ клиентов -->
+    {% if top_clients %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Топ клиентов по количеству рассылок</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for client in top_clients %}
+                <div class="col-md-4 mb-2">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ client.full_name }}</h6>
+                            <p class="card-text mb-1">
+                                <small class="text-muted">{{ client.email }}</small>
+                            </p>
+                            <span class="badge bg-primary">
+                                {{ client.mailing_count }} рассылок
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Статистика за последние 30 дней -->
+    {% if daily_stats %}
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="mb-0">Статистика за последние 30 дней (с {{ thirty_days_ago }})</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Всего попыток</th>
+                            <th>Успешных</th>
+                            <th>Неудачных</th>
+                            <th>Процент успеха</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in daily_stats %}
+                        <tr>
+                            <td>{{ day.date }}</td>
+                            <td>{{ day.total }}</td>
+                            <td class="text-success">{{ day.success }}</td>
+                            <td class="text-danger">{{ day.failed }}</td>
+                            <td>
+                                {% widthratio day.success day.total 100 as success_percent %}
+                                <span class="text-{% if success_percent >= 80 %}success{% elif success_percent >= 50 %}warning{% else %}danger{% endif %}">
+                                    {{ success_percent }}%
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not mailing_stats %}
+    <div class="alert alert-info mt-4">
+        <h4 class="alert-heading">Нет данных для отображения</h4>
+        <p>У вас пока нет рассылок или статистики. Создайте свою первую рассылку!</p>
+        <a href="{% url 'mailing:mailing_create' %}" class="btn btn-primary">Создать рассылку</a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.display-4 {
+    font-size: 2.5rem;
+    font-weight: 300;
+}
+.table th {
+    font-weight: 600;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% load cache %}
+
+{% block content %}
+<h1>Главная страница</h1>
+
+<!-- ПЕРЕНЕСИ КЕШ ВНУТРЬ КАРТОЧЕК -->
+<div class="row">
+    <div class="col-md-4">
+        {% cache 300 total_mailings %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Всего рассылок</h5>
+                <p class="card-text">{{ total_mailings }}</p>
+            </div>
+        </div>
+        {% endcache %}
+    </div>
+    <div class="col-md-4">
+        {% cache 300 active_mailings %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Активные рассылки</h5>
+                <p class="card-text">{{ active_mailings }}</p>
+            </div>
+        </div>
+        {% endcache %}
+    </div>
+    <div class="col-md-4">
+        {% cache 300 unique_clients %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Уникальные клиенты</h5>
+                <p class="card-text">{{ unique_clients }}</p>
+            </div>
+        </div>
+        {% endcache %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card p-4">
+        <div class="auth-header">
+            <div class="auth-icon">
+                <i class="fas fa-user-plus"></i>
+            </div>
+            <h2>Регистрация</h2>
+            <p class="text-muted">Создайте новый аккаунт</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="mb-3">
+                <label for="{{ field.id_for_label }}" class="form-label">
+                    {{ field.label }}
+                </label>
+
+                <div class="input-with-icon">
+                    {% if field.name == 'email' %}
+                    <i class="fas fa-envelope"></i>
+                    {% elif field.name == 'password1' or field.name == 'password2' %}
+                    <i class="fas fa-lock"></i>
+                    {% else %}
+                    <i class="fas fa-user"></i>
+                    {% endif %}
+
+                    {{ field }}
+                </div>
+
+                {% if field.help_text %}
+                <div class="form-text">{{ field.help_text }}</div>
+                {% endif %}
+
+                {% for error in field.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary btn-auth">
+                <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+            </button>
+        </form>
+
+        <div class="auth-links">
+            <p>Уже есть аккаунт? <a href="{% url 'users:login' %}">Войдите</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Стили для полей формы регистрации */
+#id_password1, #id_password2 {
+    padding-left: 45px;
+}
+</style>
+{% endblock %}
